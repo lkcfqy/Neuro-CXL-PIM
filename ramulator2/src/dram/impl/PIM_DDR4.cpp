@@ -91,7 +91,24 @@ class PIM_DDR4 : public IDRAM, public Implementation {
       "channel", "rank", "bankgroup", "bank", "row", "column",    
     };
 
-    // ... (Voltages and Currents skipped for brevity, keeping same as DDR4 or adding PIM specific power later)
+    /************************************************
+     *                 Node States
+     ***********************************************/
+    inline static constexpr ImplDef m_states = {
+       "Opened", "Closed", "PowerUp", "N/A", "Refreshing"
+    };
+
+    inline static const ImplLUT m_init_states = LUT (
+      m_levels, m_states, {
+        {"channel",   "N/A"}, 
+        {"rank",      "PowerUp"},
+        {"bankgroup", "N/A"},
+        {"bank",      "Closed"},
+        {"row",       "Closed"},
+        {"column",    "N/A"},
+      }
+    );
+
     // For this prototype, we reuse standard voltage/current defs but they won't be used unless we implement set_powers fully.
     
     public:

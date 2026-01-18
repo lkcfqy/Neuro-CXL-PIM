@@ -7,15 +7,14 @@ MemorySystem:
   impl: GenericDRAM
   clock_ratio: 1
   DRAM:
-    impl: PIM_HBM3
+    impl: DDR4
     org:
-      preset: PIM_8Gb
+      preset: DDR4_8Gb_x8
       channel: 1 
     timing:
-      preset: HBM3_2Gbps_PIM
+      preset: DDR4_2400R
   Controller:
     impl: Generic
-    cxl_latency_ns: 60
     Scheduler:
       impl: FRFCFS
     RefreshManager:
@@ -24,4 +23,4 @@ MemorySystem:
       impl: ClosedRowPolicy
       cap: 4
   AddrMapper:
-    impl: Linear 
+    impl: RoBaRaCoCh

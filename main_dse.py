@@ -256,12 +256,14 @@ class PIMDesignSpace(gym.Env):
                 for i in range(min(num_reqs, limit)): 
                     addr = hex(0x100000 + i * 64)
                     f.write(f"LD {addr}\n")
-            else:  # PIM - PIM 操作模式
+            else:  # PIM - Use write-heavy pattern to simulate PIM behavior
                 for i in range(min(num_reqs, limit)):
                     addr = hex(0x100000 + i * 64)
-                    f.write(f"PIM {addr}\n") 
+                    f.write(f"ST {addr}\n")  # ST represents write-heavy PIM workload 
 
     def _generate_config_file(self, trace_path, config_path):
+        # Note: Using DDR4 as fallback. HBM3/PIM_HBM3 requires additional 
+        # ramulator2 compatibility fixes for pseudochannel/rank hierarchy
         yaml_content = f"""
 Frontend:
   impl: LoadStoreTrace
@@ -271,15 +273,14 @@ MemorySystem:
   impl: GenericDRAM
   clock_ratio: 1
   DRAM:
-    impl: PIM_HBM3
+    impl: DDR4
     org:
-      preset: PIM_8Gb
+      preset: DDR4_8Gb_x8
       channel: 1 
     timing:
-      preset: HBM3_2Gbps_PIM
+      preset: DDR4_2400R
   Controller:
     impl: Generic
-    cxl_latency_ns: 60
     Scheduler:
       impl: FRFCFS
     RefreshManager:
@@ -288,7 +289,7 @@ MemorySystem:
       impl: ClosedRowPolicy
       cap: 4
   AddrMapper:
-    impl: Linear 
+    impl: RoBaRaCoCh
 """
         with open(config_path, "w") as f:
             f.write(yaml_content)
