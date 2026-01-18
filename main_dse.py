@@ -1,12 +1,26 @@
 import os
 import subprocess
 import re
+import logging
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from workload_analysis import WorkloadProfiler
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# ==================== 路径配置 ====================
+RAMULATOR_PATH = os.environ.get(
+    'RAMULATOR_PATH', 
+    os.path.join(os.path.dirname(__file__), 'ramulator2', 'build', 'ramulator2')
+)
 
 # ==================== 硬件配置参数 ====================
 class HardwareConfig:
@@ -208,7 +222,7 @@ class PIMDesignSpace(gym.Env):
         self._generate_config_file(trace_file, config_file)
         
         cmd = [
-            "./ramulator2/build/ramulator2",
+            RAMULATOR_PATH,
             "-f", config_file
         ]
         
@@ -219,9 +233,17 @@ class PIMDesignSpace(gym.Env):
             if match:
                 return int(match.group(1))
             else:
+                logger.warning(f"Step {step_id}: Could not parse memory_system_cycles from output")
                 return 10000
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        except subprocess.CalledProcessError as e:
+            logger.warning(f"Step {step_id}: Ramulator2 failed with return code {e.returncode}")
             return 20000
+        except subprocess.TimeoutExpired:
+            logger.warning(f"Step {step_id}: Ramulator2 simulation timed out (30s)")
+            return 20000
+        except FileNotFoundError:
+            logger.error(f"Ramulator2 not found at: {RAMULATOR_PATH}")
+            raise RuntimeError(f"Ramulator2 executable not found. Please build it or set RAMULATOR_PATH environment variable.")
 
     def _generate_trace_file(self, action, features, filepath):
         _, data_size, _ = features
