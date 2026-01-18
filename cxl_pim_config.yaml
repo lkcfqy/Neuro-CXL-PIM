@@ -1,0 +1,29 @@
+# cxl_pim_config.yaml
+Frontend:
+  impl: LoadStoreTrace
+  path: ./traces/current_workload.trace
+  clock_ratio: 1
+
+MemorySystem:
+  impl: GenericDRAM
+  clock_ratio: 1
+  DRAM:
+    impl: DDR4
+    org:
+      preset: DDR4_8Gb_x8
+      channel: 1
+      rank: 1
+    timing:
+      preset: DDR4_2400R
+      # 模拟 CXL 延迟 (比本地DRAM慢) - 可以通过自定义 timing 参数来调整
+  Controller:
+    impl: Generic
+    Scheduler:
+      impl: FRFCFS
+    RefreshManager:
+      impl: AllBank
+    RowPolicy:
+      impl: ClosedRowPolicy
+      cap: 4
+  AddrMapper:
+    impl: RoBaRaCoCh

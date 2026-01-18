@@ -1,0 +1,27 @@
+
+Frontend:
+  impl: LoadStoreTrace
+  path: traces/step_13.trace
+  clock_ratio: 1
+MemorySystem:
+  impl: GenericDRAM
+  clock_ratio: 1
+  DRAM:
+    impl: PIM_HBM3
+    org:
+      preset: PIM_8Gb
+      channel: 1 
+    timing:
+      preset: HBM3_2Gbps_PIM
+  Controller:
+    impl: Generic
+    cxl_latency_ns: 60
+    Scheduler:
+      impl: FRFCFS
+    RefreshManager:
+      impl: AllBank
+    RowPolicy:
+      impl: ClosedRowPolicy
+      cap: 4
+  AddrMapper:
+    impl: Linear 
